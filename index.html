@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extra Credit Upload</title>
+<style>
+  :root {
+    --bg: #f3f5f8; --card: #ffffff; --ink: #172030; --muted: #5a6474; --line: #e1e5eb; --line-strong: #c9d0da;
+    --soft: #f1f3f7; --field: #ffffff; --drop: #f8f9fb; --bar: #e6e9ef;
+    --band: #0c2340; --band-ink: #ffffff; --band-muted: #c3cedf; --eyebrow: #ffb18c;
+    --accent: #e8551d; --accent-hover: #cf4712; --accent-soft: #fff1ea;
+    --navy-btn: #0c2340; --focus: #2f6fed; --focus-ring: rgba(47, 111, 237, .35);
+    --ok: #17804a; --ok-bg: #e7f6ee; --warn: #8a5300; --warn-bg: #fff4df; --bad: #b42318; --bad-bg: #fdecea;
+    --info: #1d4f91; --info-bg: #eaf1fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1219; --card: #151b24; --ink: #e6eaf0; --muted: #9ba6b5; --line: #262f3b; --line-strong: #394454;
+      --soft: #1c2430; --field: #0f141b; --drop: #121821; --bar: #263040;
+      --band: #0a1b31; --band-muted: #9fb0c8;
+      --accent-soft: rgba(232, 85, 29, .14); --navy-btn: #2a4a78; --focus-ring: rgba(96, 146, 255, .45);
+      --ok: #5cd394; --ok-bg: rgba(92, 211, 148, .12); --warn: #f2b85b; --warn-bg: rgba(242, 184, 91, .12);
+      --bad: #ff8a80; --bad-bg: rgba(255, 138, 128, .12); --info: #9cc2ff; --info-bg: rgba(156, 194, 255, .12);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  [hidden] { display: none !important; }
+
+  .band { background: var(--band); color: var(--band-ink); padding: 36px 16px 84px; }
+  .band .inner, main { max-width: 760px; margin: 0 auto; }
+  .eyebrow { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--eyebrow); }
+  h1 { margin: 0 0 6px; font-size: clamp(26px, 4.5vw, 34px); line-height: 1.15; letter-spacing: -.01em; }
+  .band p.sub { margin: 0; color: var(--band-muted); }
+  main { margin-top: -56px; padding: 0 16px 56px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 32px; box-shadow: 0 12px 32px rgba(12, 35, 64, .08); }
+  @media (max-width: 560px) { .card { padding: 20px; border-radius: 14px; } }
+  h2 { margin: 0 0 6px; font-size: 22px; line-height: 1.25; }
+
+  .steps { list-style: none; margin: 0 0 20px; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; counter-reset: step; }
+  .steps li { background: var(--soft); border-radius: 12px; padding: 14px; font-size: 14px; color: var(--muted); counter-increment: step; }
+  .steps li::before { content: counter(step); display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--navy-btn); color: #fff; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+  .steps b { display: block; color: var(--ink); }
+  @media (max-width: 640px) { .steps { grid-template-columns: 1fr; } }
+
+  .alert { border-radius: 10px; padding: 12px 14px; font-size: 14px; margin: 0 0 20px; }
+  .alert.info { background: var(--info-bg); color: var(--info); }
+  .alert.warn { background: var(--warn-bg); color: var(--warn); }
+  .alert.bad { background: var(--bad-bg); color: var(--bad); }
+  .alert ul { margin: 6px 0 0; padding-left: 20px; }
+
+  .field { margin-bottom: 18px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; gap: 0; } }
+  label, .label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+  input[type=text], input[type=email], select {
+    width: 100%; padding: 11px 12px; font: inherit; color: var(--ink);
+    background: var(--field); border: 1px solid var(--line-strong); border-radius: 9px;
+  }
+  select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
+  input:focus, select:focus { outline: 3px solid var(--focus-ring); outline-offset: 0; border-color: var(--focus); }
+  [aria-invalid=true] { border-color: var(--bad) !important; }
+  .hint { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+
+  .drop { border: 2px dashed var(--line-strong); border-radius: 14px; background: var(--drop); padding: 28px 16px; text-align: center; transition: border-color .15s, background .15s; }
+  .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop svg { width: 34px; height: 34px; color: var(--accent); margin-bottom: 6px; }
+  .drop .big { margin: 0 0 4px; font-weight: 600; }
+  .linkish { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .linkish:focus-visible { outline: 3px solid var(--focus-ring); border-radius: 4px; }
+
+  .files { list-style: none; margin: 12px 0 0; padding: 0; }
+  .files li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; }
+  .ext { min-width: 46px; padding: 4px 6px; border-radius: 6px; background: var(--soft); color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-align: center; }
+  .fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fsize { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .remove { border: 0; background: none; color: var(--muted); font-size: 22px; line-height: 1; padding: 2px 8px; border-radius: 6px; cursor: pointer; }
+  .remove:hover { background: var(--soft); color: var(--ink); }
+  .summary { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 8px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 22px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
+  .btn:hover { background: var(--accent-hover); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+  .btn.secondary { background: var(--navy-btn); }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line-strong); }
+  .btn.ghost:hover { background: var(--soft); }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.5); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .bar { height: 8px; background: var(--bar); border-radius: 99px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; width: 0; background: var(--accent); border-radius: inherit; transition: width .25s ease; }
+  .bar.big { height: 14px; margin-top: 18px; }
+  .meta { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 8px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .status { min-height: 1.5em; margin: 10px 0 0; font-size: 14px; color: var(--warn); }
+  .progress li { grid-template-columns: minmax(0, 1fr) auto; row-gap: 8px; }
+  .progress li .bar { grid-column: 1 / -1; height: 6px; }
+  .state { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .state.done { color: var(--ok); }
+  .state.failed { color: var(--bad); }
+  .progress li.done .bar > span { background: var(--ok); }
+  .progress li.failed .bar > span { background: var(--bad); }
+
+  .done-head { display: flex; gap: 14px; align-items: center; margin-bottom: 18px; }
+  .done-icon { flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--ok-bg); color: var(--ok); }
+  .done-icon svg { width: 26px; height: 26px; }
+  .done-head p { margin: 0; color: var(--muted); }
+  .check { color: var(--ok); font-weight: 700; }
+
+  footer { max-width: 760px; margin: 0 auto; padding: 0 16px 32px; font-size: 13px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+  <header class="band">
+    <div class="inner">
+      <p class="eyebrow">Extra credit submission</p>
+      <h1 id="title"></h1>
+      <p class="sub" id="instructor"></p>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+
+      <section id="loadingView">
+        <p class="hint" style="margin:0;font-size:15px">Loading the upload form&hellip;</p>
+      </section>
+
+      <section id="loadErrorView" hidden>
+        <h2>The upload page couldn&rsquo;t load</h2>
+        <p class="hint" style="margin:0 0 16px;font-size:15px">Check your internet connection, then try again.</p>
+        <button type="button" class="btn" onclick="location.reload()">Try again</button>
+      </section>
+
+      <!-- Form -->
+      <section id="formView" hidden>
+        <ol class="steps">
+          <li><b>Tell us who you are</b>Pick your section and enter your name and email.</li>
+          <li><b>Add your files</b>Your video, slides, and anything else. Large videos are fine.</li>
+          <li><b>Check your email</b>You get a receipt listing every file we received.</li>
+        </ol>
+        <p class="alert info" id="policy">You can upload as many times as you like. Your newest upload is the one that gets reviewed, so include all of your files each time.</p>
+        <p class="alert warn" id="deadline" hidden></p>
+
+        <form id="form" novalidate>
+          <div class="field">
+            <label for="section">Class and section</label>
+            <select id="section" required>
+              <option value="">Choose your class and section</option>
+            </select>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="first">First name</label>
+              <input type="text" id="first" autocomplete="given-name" maxlength="50" required>
+            </div>
+            <div class="field">
+              <label for="last">Last name</label>
+              <input type="text" id="last" autocomplete="family-name" maxlength="50" required>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="email">Email</label>
+              <input type="email" id="email" autocomplete="email" maxlength="100" required>
+            </div>
+            <div class="field">
+              <label for="email2">Confirm email</label>
+              <input type="email" id="email2" autocomplete="off" maxlength="100" required>
+            </div>
+          </div>
+          <p class="hint" style="margin:-8px 0 18px">Your receipt goes to this address. Any email works, including your UTSA email.</p>
+          <div class="field" id="codeField" hidden>
+            <label for="code">Access code</label>
+            <input type="text" id="code" autocomplete="off" maxlength="50">
+            <p class="hint">Posted in Canvas with the link to this page.</p>
+          </div>
+
+          <div class="field">
+            <span class="label">Files</span>
+            <div class="drop" id="drop">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M20 16v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3"/></svg>
+              <p class="big">Drag files here or <button type="button" class="linkish" id="browseBtn">browse your computer</button></p>
+              <p class="hint" id="limits"></p>
+              <input type="file" id="fileInput" multiple hidden>
+              <button type="button" class="linkish" id="selfTestBtn" hidden>Add self-test files</button>
+            </div>
+            <p class="alert warn" id="fileNotes" hidden style="margin:12px 0 0"></p>
+            <ul class="files" id="fileList"></ul>
+            <p class="summary" id="fileSummary"></p>
+          </div>
+
+          <div class="alert bad" id="formError" role="alert" hidden></div>
+          <div class="actions">
+            <button type="submit" class="btn" id="submitBtn">Upload submission</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Progress -->
+      <section id="progressView" hidden>
+        <h2>Uploading your files</h2>
+        <p class="hint" style="margin:0">Keep this tab open and your computer awake until this finishes.</p>
+        <div class="bar big"><span id="overallBar"></span></div>
+        <div class="meta"><span id="overallText">0%</span><span id="speedText"></span></div>
+        <p class="status" id="statusLine" aria-live="polite"></p>
+        <ul class="files progress" id="progressList"></ul>
+      </section>
+
+      <!-- Done -->
+      <section id="doneView" hidden>
+        <div class="done-head">
+          <div class="done-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+          <div>
+            <h2 id="doneTitle" tabindex="-1">Submission received</h2>
+            <p id="doneWhen"></p>
+          </div>
+        </div>
+        <div class="alert warn" id="doneFailed" hidden></div>
+        <ul class="files" id="doneFiles"></ul>
+        <p class="alert info" id="doneEmail" style="margin-top:16px"></p>
+        <div class="actions">
+          <button type="button" class="btn ghost" id="againBtn">Upload again</button>
+        </div>
+      </section>
+
+      <!-- Closed -->
+      <section id="closedView" hidden>
+        <h2>Submissions are closed</h2>
+        <p class="hint" style="margin:0;font-size:15px">This assignment is no longer accepting uploads. Contact your instructor if you think this is a mistake.</p>
+      </section>
+
+    </div>
+  </main>
+  <footer>Files are stored in your instructor's Google Drive.</footer>
+
+<script>
+// The uploader's backend: a Google Apps Script web app used as a JSON API. Requests carry no
+// cookies, so Google's multiple-accounts bug ("Sorry, unable to open the file") can't trigger.
+const API = 'https://script.google.com/macros/s/AKfycbxOiX6OhaJlWxPn031g4D8HcqEnybjIf69fmYJkH562ZYWEyHuqCDZulLyQFlUG-5kY/exec';
+const params = new URLSearchParams(location.search);
+let CFG = null;
+const CHUNK_BYTES = 16 * 1024 * 1024; // Drive requires chunks in multiples of 256 KiB
+const MAX_TRIES = 10;
+const $ = (id) => document.getElementById(id);
+
+let picked = [];          // [{ file, key }]
+let uploading = false;
+let rangeReadable = false; // whether the browser can read Drive's Range header
+let totalBytes = 0;
+let sizes = [];
+let loaded = [];
+let samples = [];
+
+loadConfig();
+
+async function loadConfig() {
+  try {
+    CFG = await callServer('config', { section: params.get('section') || '', selftest: params.get('selftest') || '' });
+  } catch (err) {
+    return show('loadErrorView');
+  }
+  init();
+}
+
+function init() {
+  document.title = CFG.title + ' | Upload';
+  $('title').textContent = CFG.title;
+  $('instructor').textContent = 'Instructor: ' + CFG.instructor;
+  if (CFG.closed) return show('closedView');
+  show('formView');
+
+  if (CFG.closesAt) {
+    $('deadline').textContent = 'Uploads close ' + CFG.closesAt + '.';
+    $('deadline').hidden = false;
+  }
+  CFG.sections.forEach((s) => $('section').add(new Option(s, s)));
+  $('section').value = CFG.section;
+  $('codeField').hidden = !CFG.needsCode;
+  $('limits').textContent = 'Videos, slides, documents, or anything else. Up to ' + CFG.maxFiles +
+    ' files and ' + fmtBytes(CFG.maxTotalBytes) + ' per upload.';
+
+  $('browseBtn').addEventListener('click', () => $('fileInput').click());
+  $('fileInput').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
+  const drop = $('drop');
+  drop.addEventListener('dragenter', (e) => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', (e) => { if (!drop.contains(e.relatedTarget)) drop.classList.remove('over'); });
+  drop.addEventListener('drop', onDrop);
+  // Keep the browser from opening a file dropped just outside the zone.
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => e.preventDefault());
+
+  $('form').addEventListener('submit', onSubmit);
+  $('againBtn').addEventListener('click', startOver);
+  ['section', 'first', 'last', 'email', 'email2', 'code'].forEach((id) =>
+    $(id).addEventListener('input', () => $(id).removeAttribute('aria-invalid')));
+  window.addEventListener('beforeunload', (e) => { if (uploading) { e.preventDefault(); e.returnValue = ''; } });
+
+  if (CFG.selfTest) {
+    $('selfTestBtn').hidden = false;
+    $('selfTestBtn').addEventListener('click', () => addFiles([
+      new File([new Uint8Array(20 * 1024 * 1024)], 'selftest-20MB.bin', { type: 'application/octet-stream' }),
+      new File(['Uploader self-test ' + new Date().toISOString() + '\n'], 'selftest-note.txt', { type: 'text/plain' })
+    ]));
+  }
+  renderFiles([]);
+}
+
+// ---------------------------------------------------------------- file picking
+
+function onDrop(e) {
+  e.preventDefault();
+  $('drop').classList.remove('over');
+  const files = [];
+  let folders = 0;
+  const items = e.dataTransfer.items;
+  if (items && items.length && items[0].webkitGetAsEntry) {
+    for (const item of items) {
+      if (item.kind !== 'file') continue;
+      const entry = item.webkitGetAsEntry();
+      if (entry && entry.isDirectory) { folders++; continue; }
+      const file = item.getAsFile();
+      if (file) files.push(file);
+    }
+  } else {
+    files.push(...e.dataTransfer.files);
+  }
+  addFiles(files, folders ? ['Folders can’t be uploaded directly. Open the folder and select the files inside it.'] : []);
+}
+
+function addFiles(list, notes = []) {
+  for (const file of list) {
+    const key = [file.name, file.size, file.lastModified].join('|');
+    if (picked.some((p) => p.key === key)) continue;
+    if (file.size === 0) { notes.push('“' + file.name + '” is empty, so it was skipped.'); continue; }
+    if (picked.length >= CFG.maxFiles) { notes.push('You can upload up to ' + CFG.maxFiles + ' files at a time.'); break; }
+    picked.push({ file, key });
+  }
+  renderFiles(notes);
+}
+
+function renderFiles(notes) {
+  const list = $('fileList');
+  list.textContent = '';
+  picked.forEach((p, i) => {
+    const li = document.createElement('li');
+    li.append(el('span', 'ext', extOf(p.file.name)), el('span', 'fname', p.file.name), el('span', 'fsize', fmtBytes(p.file.size)));
+    const remove = el('button', 'remove', '×');
+    remove.type = 'button';
+    remove.setAttribute('aria-label', 'Remove ' + p.file.name);
+    remove.addEventListener('click', () => { picked.splice(i, 1); renderFiles([]); });
+    li.append(remove);
+    list.append(li);
+  });
+
+  const noteBox = $('fileNotes');
+  noteBox.hidden = !notes.length;
+  noteBox.textContent = notes.join(' ');
+
+  const total = picked.reduce((sum, p) => sum + p.file.size, 0);
+  const over = total > CFG.maxTotalBytes;
+  $('fileSummary').textContent = picked.length
+    ? picked.length + (picked.length === 1 ? ' file, ' : ' files, ') + fmtBytes(total) + ' total' +
+      (over ? '. That is over the ' + fmtBytes(CFG.maxTotalBytes) + ' limit.' : '')
+    : '';
+  $('fileSummary').style.color = over ? 'var(--bad)' : '';
+  $('submitBtn').textContent = picked.length
+    ? 'Upload ' + picked.length + (picked.length === 1 ? ' file' : ' files') + ' (' + fmtBytes(total) + ')'
+    : 'Upload submission';
+}
+
+// ---------------------------------------------------------------- submit
+
+function readForm() {
+  const v = {
+    section: $('section').value,
+    first: $('first').value.trim(),
+    last: $('last').value.trim(),
+    email: $('email').value.trim().toLowerCase(),
+    email2: $('email2').value.trim().toLowerCase(),
+    code: $('code').value.trim()
+  };
+  const emailOk = /^[a-z0-9._%+'-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(v.email);
+  const total = picked.reduce((sum, p) => sum + p.file.size, 0);
+  const problem =
+    !v.section ? ['section', 'Choose your class and section.'] :
+    !v.first ? ['first', 'Enter your first name.'] :
+    !v.last ? ['last', 'Enter your last name.'] :
+    !emailOk ? ['email', 'Enter a valid email address.'] :
+    v.email !== v.email2 ? ['email2', 'The two email addresses don’t match.'] :
+    CFG.needsCode && !v.code ? ['code', 'Enter the access code from Canvas.'] :
+    !picked.length ? ['browseBtn', 'Add at least one file.'] :
+    total > CFG.maxTotalBytes ? ['browseBtn', 'Your files are over the ' + fmtBytes(CFG.maxTotalBytes) + ' limit. Remove some and try again.'] :
+    null;
+  if (problem) {
+    const field = $(problem[0]);
+    if (field.tagName !== 'BUTTON') field.setAttribute('aria-invalid', 'true');
+    field.focus();
+    showFormError(problem[1]);
+    return null;
+  }
+  return v;
+}
+
+async function onSubmit(e) {
+  e.preventDefault();
+  if (uploading) return;
+  $('formError').hidden = true;
+  const v = readForm();
+  if (!v) return;
+
+  setBusy(true);
+  let start;
+  try {
+    start = await callServer('startSubmission', {
+      section: v.section, first: v.first, last: v.last, email: v.email, code: v.code,
+      origin: location.origin,
+      files: picked.map((p) => ({ name: p.file.name, size: p.file.size, type: p.file.type }))
+    });
+  } catch (err) {
+    setBusy(false);
+    return showFormError(errText(err));
+  }
+
+  const files = picked.map((p) => p.file);
+  uploading = true;
+  showProgress(files);
+
+  const fileIds = [];
+  const failed = [];
+  for (let i = 0; i < files.length; i++) {
+    try {
+      const result = await uploadFile(files[i], start.uploads[i].url, i);
+      if (result && result.id) fileIds.push(result.id);
+      setItem(i, 'done', 'Uploaded');
+    } catch (err) {
+      failed.push(files[i].name);
+      setItem(i, 'failed', 'Failed');
+    }
+  }
+
+  setStatus('Saving your submission…', true);
+  let receipt = null;
+  let finishError = null;
+  for (let attempt = 1; attempt <= 3 && !receipt; attempt++) {
+    try {
+      receipt = await callServer('finishSubmission', { folderId: start.folderId, token: start.token, fileIds });
+    } catch (err) {
+      finishError = err;
+      if (/verified|None of your files/.test(errText(err))) break;
+      await sleep(2000 * attempt);
+    }
+  }
+  uploading = false;
+  setBusy(false);
+  if (receipt) showDone(receipt, failed);
+  else showRetry(errText(finishError));
+}
+
+// ---------------------------------------------------------------- upload engine
+
+/** Sends one file to its Drive resumable session in chunks, resuming after dropped connections. */
+async function uploadFile(file, url, index) {
+  const size = file.size;
+  let offset = 0;
+  let tries = 0;
+  setItem(index, 'active', 'Uploading');
+  for (;;) {
+    const end = Math.min(offset + CHUNK_BYTES, size);
+    const from = offset;
+    let xhr = null;
+    try {
+      xhr = await put(url, file.slice(from, end), 'bytes ' + from + '-' + (end - 1) + '/' + size,
+        (sent) => progress(index, from + sent));
+    } catch (networkError) { /* retried below */ }
+
+    if (xhr && (xhr.status === 200 || xhr.status === 201)) {
+      progress(index, size);
+      return parseJson(xhr.responseText);
+    }
+    if (xhr && xhr.status === 308) {
+      offset = committed(xhr, end);
+      tries = 0;
+      progress(index, offset);
+      continue;
+    }
+    if (xhr && xhr.status >= 400 && xhr.status < 500 && xhr.status !== 408 && xhr.status !== 429) {
+      throw new Error('Google Drive refused the file (error ' + xhr.status + ').');
+    }
+    if (++tries > MAX_TRIES) throw new Error('The connection kept dropping.');
+
+    const wait = Math.min(30, 2 ** (tries - 1));
+    for (let s = wait; s > 0; s--) {
+      setStatus('Connection interrupted. Trying again in ' + s + ' s…');
+      await sleep(1000);
+    }
+    setStatus('');
+    // Ask Drive how much of the file it already has, then continue from there.
+    try {
+      const probe = await put(url, null, 'bytes */' + size);
+      if (probe.status === 200 || probe.status === 201) { progress(index, size); return parseJson(probe.responseText); }
+      if (probe.status === 308) offset = committed(probe, rangeReadable ? 0 : offset);
+    } catch (stillOffline) { /* next loop retries */ }
+  }
+}
+
+/** Next byte Drive expects, from its Range header ("bytes=0-123"), or the fallback if it can't be read. */
+function committed(xhr, fallback) {
+  const range = xhr.getResponseHeader('Range');
+  if (!range) return fallback;
+  rangeReadable = true;
+  return Number(range.split('-')[1]) + 1;
+}
+
+function put(url, body, contentRange, onSent) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', url);
+    xhr.setRequestHeader('Content-Range', contentRange);
+    if (onSent) xhr.upload.onprogress = (e) => onSent(e.loaded);
+    xhr.onload = () => resolve(xhr);
+    xhr.onerror = xhr.ontimeout = xhr.onabort = () => reject(new Error('network'));
+    xhr.send(body);
+  });
+}
+
+// ---------------------------------------------------------------- progress + results
+
+function showProgress(files) {
+  sizes = files.map((f) => f.size);
+  totalBytes = sizes.reduce((a, b) => a + b, 0);
+  loaded = files.map(() => 0);
+  samples = [];
+  const list = $('progressList');
+  list.textContent = '';
+  files.forEach((f) => {
+    const li = document.createElement('li');
+    const bar = el('div', 'bar', '');
+    bar.append(document.createElement('span'));
+    li.append(el('span', 'fname', f.name + '  ·  ' + fmtBytes(f.size)), el('span', 'state', 'Waiting'), bar);
+    list.append(li);
+  });
+  setStatus('');
+  $('overallBar').style.width = '0%';
+  $('overallText').textContent = '0%';
+  $('speedText').textContent = '';
+  show('progressView');
+}
+
+function progress(index, bytes) {
+  loaded[index] = bytes;
+  const li = $('progressList').children[index];
+  const size = sizes[index];
+  li.querySelector('.bar > span').style.width = Math.min(100, (bytes / size) * 100).toFixed(1) + '%';
+  if (li.classList.contains('active')) li.querySelector('.state').textContent = Math.floor((bytes / size) * 100) + '%';
+
+  const done = loaded.reduce((a, b) => a + b, 0);
+  const pct = totalBytes ? done / totalBytes : 1;
+  $('overallBar').style.width = (pct * 100).toFixed(1) + '%';
+  $('overallText').textContent = Math.floor(pct * 100) + '%  ·  ' + fmtBytes(done) + ' of ' + fmtBytes(totalBytes);
+
+  const now = performance.now();
+  samples.push([now, done]);
+  while (samples.length > 2 && now - samples[0][0] > 8000) samples.shift();
+  const [t0, b0] = samples[0];
+  const rate = now - t0 > 1500 ? (done - b0) / ((now - t0) / 1000) : 0;
+  $('speedText').textContent = rate > 0 && done < totalBytes
+    ? fmtBytes(rate) + '/s  ·  ' + fmtDuration((totalBytes - done) / rate) + ' left'
+    : '';
+}
+
+function setItem(index, state, label) {
+  const li = $('progressList').children[index];
+  li.className = state;
+  const tag = li.querySelector('.state');
+  tag.className = 'state ' + state;
+  tag.textContent = state === 'done' ? '✓ ' + label : label;
+}
+
+function showDone(r, failed) {
+  $('doneWhen').textContent = r.when + '  ·  ' + r.section;
+  const list = $('doneFiles');
+  list.textContent = '';
+  r.files.forEach((f) => {
+    const li = document.createElement('li');
+    li.style.gridTemplateColumns = 'auto minmax(0, 1fr) auto';
+    li.append(el('span', 'check', '✓'), el('span', 'fname', f.name), el('span', 'fsize', fmtBytes(f.size)));
+    list.append(li);
+  });
+
+  const failBox = $('doneFailed');
+  failBox.hidden = !failed.length;
+  if (failed.length) {
+    failBox.textContent = '';
+    failBox.append(document.createTextNode('These files did not upload. Please upload again and include all of your files, since your newest upload is the one that gets reviewed.'));
+    const ul = document.createElement('ul');
+    failed.forEach((name) => ul.append(el('li', '', name)));
+    failBox.append(ul);
+  }
+
+  $('doneEmail').textContent = (r.emailed
+    ? 'A receipt listing these files is on its way to ' + r.email + '. It can take a few minutes to arrive. '
+    : 'Your files are saved. ') + 'You can also take a screenshot of this page for your records.';
+
+  show('doneView');
+  $('doneTitle').focus();
+}
+
+function showRetry(message) {
+  show('formView');
+  showFormError(message + ' Your files are still selected, so you can try again.');
+}
+
+function startOver() {
+  picked = [];
+  renderFiles([]);
+  $('formError').hidden = true;
+  $('policy').textContent = 'Uploading again? Include all of your files. Your newest upload is the one that gets reviewed.';
+  show('formView');
+}
+
+// ---------------------------------------------------------------- helpers
+
+function show(id) {
+  ['loadingView', 'loadErrorView', 'formView', 'progressView', 'doneView', 'closedView'].forEach((v) => { $(v).hidden = v !== id; });
+  window.scrollTo(0, 0);
+}
+
+function setBusy(busy) {
+  const btn = $('submitBtn');
+  btn.disabled = busy;
+  if (busy) {
+    btn.textContent = '';
+    btn.append(el('span', 'spinner', ''), document.createTextNode('Preparing your upload…'));
+  } else {
+    renderFiles([]);
+  }
+}
+
+function setStatus(text, neutral) {
+  $('statusLine').textContent = text;
+  $('statusLine').style.color = neutral ? 'var(--muted)' : '';
+}
+
+function showFormError(message) {
+  $('formError').textContent = message;
+  $('formError').hidden = false;
+}
+
+/** Calls the backend. A plain-text POST with no cookies needs no CORS preflight. */
+async function callServer(action, payload) {
+  let res;
+  try {
+    res = await fetch(API, { method: 'POST', body: JSON.stringify({ action, payload }), credentials: 'omit' });
+  } catch (err) {
+    throw new Error('Could not reach the upload service. Check your internet connection and try again.');
+  }
+  const data = await res.json().catch(() => null);
+  if (!data) throw new Error('The upload service did not respond. Please try again in a minute.');
+  if (!data.ok) throw new Error(data.error);
+  return data.result;
+}
+
+function errText(err) {
+  const message = (err && err.message) || String(err || 'Something went wrong.');
+  return message.replace(/^(Exception|Error):\s*/i, '');
+}
+
+function el(tag, cls, text) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text) node.textContent = text;
+  return node;
+}
+
+function extOf(name) {
+  const dot = name.lastIndexOf('.');
+  return dot > 0 && dot > name.length - 7 ? name.slice(dot + 1).toUpperCase() : 'FILE';
+}
+
+function fmtBytes(n) {
+  const units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0;
+  while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+  return (i === 0 ? n : n.toFixed(n < 10 ? 1 : 0)) + ' ' + units[i];
+}
+
+function fmtDuration(seconds) {
+  if (seconds < 60) return 'less than a minute';
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return 'about ' + minutes + ' min';
+  return 'about ' + Math.floor(minutes / 60) + ' h ' + (minutes % 60) + ' min';
+}
+
+function parseJson(text) {
+  try { return JSON.parse(text); } catch (e) { return null; }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+</script>
+</body>
+</html>

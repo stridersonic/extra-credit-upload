@@ -420,7 +420,7 @@ async function onSubmit(e) {
   setBusy(true);
   let start;
   try {
-    start = await callServer('startSubmission', {
+    start = await callServer('start', {
       section: v.section, first: v.first, last: v.last, email: v.email, code: v.code,
       origin: location.origin,
       files: picked.map((p) => ({ name: p.file.name, size: p.file.size, type: p.file.type }))
@@ -452,7 +452,7 @@ async function onSubmit(e) {
   let finishError = null;
   for (let attempt = 1; attempt <= 3 && !receipt; attempt++) {
     try {
-      receipt = await callServer('finishSubmission', { folderId: start.folderId, token: start.token, fileIds });
+      receipt = await callServer('finish', { folderId: start.folderId, token: start.token, fileIds });
     } catch (err) {
       finishError = err;
       if (/verified|None of your files/.test(errText(err))) break;
